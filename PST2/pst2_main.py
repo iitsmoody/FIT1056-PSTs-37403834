@@ -55,26 +55,23 @@ def update_teacher(teacher_id, **fields):
     for teacher in app_data['teachers']:
         if teacher['id'] == teacher_id:
             # Use the .update() method on the teacher dictionary to apply the 'fields'.
-            teacher.update(fields)
+            teacher.update(fields)  
             print(f"Teacher {teacher_id} updated.")
-            return
+            return True
     print(f"Error: Teacher with ID {teacher_id} not found.")
+    return False
 
 def remove_student(student_id):
     """Removes a student from the data store."""
-
     # Find the student dictionary in app_data['students'] with the matching ID.
-    # If found, use the .remove() method on the list to delete it.
-    # A list comprehension is a clean way to do this:
-    # app_data['students'] = [s for s in app_data['students'] if s['id'] != student_id]
-
     for student in app_data['students']:
         if student['id'] == student_id:
             app_data['students'].remove(student)
             print(f"Student {student_id} removed.")
-            return
+            return True
 
     print(f"Error: Student with ID {student_id} not found.")
+    return False
 
 def remove_teacher(teacher_id):
     """Removes a teacher from the data store."""
@@ -82,9 +79,10 @@ def remove_teacher(teacher_id):
         if teacher['id'] == teacher_id:
             app_data['teachers'].remove(teacher)
             print(f"Teacher {teacher_id} removed.")
-            return
+            return True
 
     print(f"Error: Teacher with ID {teacher_id} not found.")
+    return False
 
 def update_student(student_id, **fields):
     """Finds a student by ID and updates their data with provided fields."""
@@ -92,9 +90,10 @@ def update_student(student_id, **fields):
         if student['id'] == student_id:
             student.update(fields)
             print(f"Student {student_id} updated.")
-            return
+            return True
 
     print(f"Error: Student with ID {student_id} not found.")
+    return False
 
 
 
@@ -140,3 +139,65 @@ def print_student_card(student_id):
         print(f"Printed student card to {filename}.")
     else:
         print(f"Error: Could not print card, student {student_id} not found.")
+
+
+
+# --- Main Application Loop ---
+def main():
+    """Main function to run the MSMS application."""
+    load_data() # Load all data from file at startup.
+
+    while True:
+        print("\n===== MSMS v2 (Persistent) =====")
+        print("1. Check-in Student")
+        print("2. Print Student Card")
+        print("3. Update Teacher Info")
+        print("4. Remove Student")
+        print("5. Update Student")
+        print("6. Remove Teacher")
+        print("q. Quit and Save")
+        
+        choice = input("Enter your choice: ")
+        
+        made_change = False # A flag to track if we need to save
+        if choice == '1':
+            # Get student_id and course_id from user, then call check_in().
+            student_id = int(input("Enter student ID: "))
+            course_id = input("Enter course ID: ")
+            check_in(student_id, course_id)
+            made_change = True
+        elif choice == '2':
+            # Get student_id, then call print_student_card().
+            student_id = int(input("Enter student ID: "))
+            print_student_card(student_id)
+            # No change made, so no save needed
+        elif choice == '3':
+            # Get teacher_id and new details, then call update_teacher().
+            teacher_id = int(input("Enter teacher ID: "))
+            new_speciality = input("Enter new speciality: ")
+            made_change = update_teacher(teacher_id, speciality=new_speciality)
+        elif choice == '4':
+            # Get student_id, then call remove_student().
+            student_id = int(input("Enter student ID: "))
+            made_change = remove_student(student_id)
+        elif choice == '5':
+            student_id = int(input("Enter student ID: "))
+            new_name = input("Enter new student name: ")
+            made_change = update_student(student_id, name=new_name)
+        elif choice == '6':
+            teacher_id = int(input("Enter teacher ID: "))
+            made_change = remove_teacher(teacher_id)
+        elif choice.lower() == 'q':
+            print("Saving final changes and exiting.")
+            break
+        else:
+            print("Invalid choice.")
+            
+        if made_change:
+            save_data() # Save the data immediately after any change.
+
+    save_data() # One final save on exit.
+
+# --- Program Start ---
+if __name__ == "__main__":
+    main()

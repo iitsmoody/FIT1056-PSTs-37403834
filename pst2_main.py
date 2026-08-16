@@ -139,3 +139,194 @@ def print_student_card(student_id):
         print(
             f"Error: Could not print card, student {student_id} not found."
         )
+
+
+
+# --- Refactored PST1 Helper Functions ---
+
+def list_students():
+    """Prints all students stored in app_data."""
+    print("\n--- Student List ---")
+
+    if not app_data['students']:
+        print("No students in the system.")
+        return
+
+    for student in app_data['students']:
+        print(
+            f"  ID: {student['id']}, "
+            f"Name: {student['name']}, "
+            f"Enrolled in: {student.get('enrolled_in', [])}"
+        )
+
+
+def list_teachers():
+    """Prints all teachers stored in app_data."""
+    print("\n--- Teacher List ---")
+
+    if not app_data['teachers']:
+        print("No teachers in the system.")
+        return
+
+    for teacher in app_data['teachers']:
+        print(
+            f"  ID: {teacher['id']}, "
+            f"Name: {teacher['name']}, "
+            f"Speciality: {teacher['speciality']}"
+        )
+
+
+def find_students(term):
+    """Finds students by name using a case-insensitive search."""
+    print(f"\n--- Finding Students matching '{term}' ---")
+
+    results = []
+
+    for student in app_data['students']:
+        if term.lower() in student['name'].lower():
+            results.append(student)
+
+    if not results:
+        print("No matching students found.")
+    else:
+        for student in results:
+            print(
+                f"  ID: {student['id']}, "
+                f"Name: {student['name']}, "
+                f"Enrolled in: {student.get('enrolled_in', [])}"
+            )
+
+
+def find_teachers(term):
+    """Finds teachers by name or speciality using a case-insensitive search."""
+    print(f"\n--- Finding Teachers matching '{term}' ---")
+
+    results = []
+
+    for teacher in app_data['teachers']:
+        if (
+            term.lower() in teacher['name'].lower()
+            or term.lower() in teacher['speciality'].lower()
+        ):
+            results.append(teacher)
+
+    if not results:
+        print("No matching teachers found.")
+    else:
+        for teacher in results:
+            print(
+                f"  ID: {teacher['id']}, "
+                f"Name: {teacher['name']}, "
+                f"Speciality: {teacher['speciality']}"
+            )
+
+
+def find_student_by_id(student_id):
+    """Returns the student dictionary with the matching ID, or None if not found."""
+    for student in app_data['students']:
+        if student['id'] == student_id:
+            return student
+
+    return None
+
+
+def front_desk_register(name, instrument):
+    """Registers a new student and immediately enrols them in an instrument."""
+    name = name.strip()
+    instrument = instrument.strip()
+
+    if not name:
+        print("Error: Student name cannot be empty.")
+        return
+
+    if not instrument:
+        print("Error: Instrument name cannot be empty.")
+        return
+
+    student_id = app_data['next_student_id']
+
+    new_student = {
+        "id": student_id,
+        "name": name,
+        "enrolled_in": []
+    }
+
+    app_data['students'].append(new_student)
+    app_data['next_student_id'] += 1
+
+    front_desk_enrol(student_id, instrument)
+
+    print(
+        f"Registration successful!\n"
+        f"Student: {new_student['name']}\n"
+        f"Student ID: {new_student['id']}\n"
+        f"Enrolled in: {instrument}"
+    )
+
+
+def front_desk_register_teacher(name, speciality):
+    """Registers a new teacher and assigns them a unique teacher ID."""
+    name = name.strip()
+    speciality = speciality.strip()
+
+    if not name:
+        print("Error: Teacher name cannot be empty.")
+        return
+
+    if not speciality:
+        print("Error: Teacher speciality cannot be empty.")
+        return
+
+    teacher_id = app_data['next_teacher_id']
+
+    add_teacher(name, speciality)
+
+    print(
+        f"Teacher registration successful!\n"
+        f"Teacher: {name}\n"
+        f"Teacher ID: {teacher_id}\n"
+        f"Speciality: {speciality}"
+    )
+
+
+def front_desk_enrol(student_id, instrument):
+    """Enrols an existing student in an instrument."""
+    student = find_student_by_id(student_id)
+
+    if not student:
+        print(f"Error: Student ID {student_id} not found.")
+        return
+
+    instrument = instrument.strip()
+
+    if not instrument:
+        print("Error: Instrument name cannot be empty.")
+        return
+
+    for enrolled_instrument in student.get('enrolled_in', []):
+        if enrolled_instrument.lower() == instrument.lower():
+            print(
+                f"Error: {student['name']} is already enrolled in "
+                f"'{enrolled_instrument}'."
+            )
+            return
+
+    student.setdefault('enrolled_in', []).append(instrument)
+
+    print(
+        f"Front Desk: Enrolled {student['name']} "
+        f"(Student ID: {student['id']}) in '{instrument}'."
+    )
+
+
+def front_desk_lookup(term):
+    """Searches for matching students and teachers using one search term."""
+    term = term.strip()
+
+    if not term:
+        print("Error: Search term cannot be empty.")
+        return
+
+    print(f"\n--- Performing lookup for '{term}' ---")
+    find_students(term)
+    find_teachers(term)

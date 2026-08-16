@@ -330,3 +330,160 @@ def front_desk_lookup(term):
     print(f"\n--- Performing lookup for '{term}' ---")
     find_students(term)
     find_teachers(term)
+
+
+
+# --- Main Application Loop ---
+def main():
+    """Main function to run the MSMS application."""
+    load_data()  # Load all saved data when the program starts.
+
+    while True:
+        print("\n===== Music School Management System - PST2 =====")
+        print("1. Register New Student")
+        print("2. Enrol Existing Student")
+        print("3. Lookup Student or Teacher")
+        print("4. List All Students")
+        print("5. List All Teachers")
+        print("6. Register New Teacher")
+        print("7. Check-in Student")
+        print("8. Print Student Card")
+        print("9. Update Teacher")
+        print("10. Remove Teacher")
+        print("11. Update Student")
+        print("12. Remove Student")
+        print("q. Quit and Save")
+
+        choice = input("Enter your choice: ").strip()
+
+        made_change = False
+
+        if choice == '1':
+            name = input("Enter student name: ")
+            instrument = input("Enter instrument to enrol in: ")
+            front_desk_register(name, instrument)
+            made_change = True
+
+        elif choice == '2':
+            try:
+                student_id = int(input("Enter student ID: "))
+                instrument = input("Enter instrument to enrol in: ")
+                front_desk_enrol(student_id, instrument)
+                made_change = True
+            except ValueError:
+                print("Error: Student ID must be a number.")
+
+        elif choice == '3':
+            term = input("Enter search term: ")
+            front_desk_lookup(term)
+
+        elif choice == '4':
+            list_students()
+
+        elif choice == '5':
+            list_teachers()
+
+        elif choice == '6':
+            name = input("Enter teacher name: ")
+            speciality = input("Enter teacher speciality: ")
+            front_desk_register_teacher(name, speciality)
+            made_change = True
+
+        elif choice == '7':
+            try:
+                student_id = int(input("Enter student ID: "))
+                course_id = input("Enter course ID: ").strip()
+
+                if not course_id:
+                    print("Error: Course ID cannot be empty.")
+                elif find_student_by_id(student_id) is None:
+                    print(f"Error: Student ID {student_id} not found.")
+                else:
+                    check_in(student_id, course_id)
+                    made_change = True
+
+            except ValueError:
+                print("Error: Student ID must be a number.")
+
+        elif choice == '8':
+            try:
+                student_id = int(input("Enter student ID: "))
+                print_student_card(student_id)
+            except ValueError:
+                print("Error: Student ID must be a number.")
+
+        elif choice == '9':
+            try:
+                teacher_id = int(input("Enter teacher ID: "))
+                new_name = input(
+                    "Enter new teacher name (leave blank to keep current): "
+                ).strip()
+                new_speciality = input(
+                    "Enter new speciality (leave blank to keep current): "
+                ).strip()
+
+                fields = {}
+
+                if new_name:
+                    fields["name"] = new_name
+
+                if new_speciality:
+                    fields["speciality"] = new_speciality
+
+                if fields:
+                    update_teacher(teacher_id, **fields)
+                    made_change = True
+                else:
+                    print("No changes entered.")
+
+            except ValueError:
+                print("Error: Teacher ID must be a number.")
+
+        elif choice == '10':
+            try:
+                teacher_id = int(input("Enter teacher ID to remove: "))
+                remove_teacher(teacher_id)
+                made_change = True
+            except ValueError:
+                print("Error: Teacher ID must be a number.")
+
+        elif choice == '11':
+            try:
+                student_id = int(input("Enter student ID: "))
+                new_name = input(
+                    "Enter new student name (leave blank to keep current): "
+                ).strip()
+
+                if new_name:
+                    update_student(student_id, name=new_name)
+                    made_change = True
+                else:
+                    print("No changes entered.")
+
+            except ValueError:
+                print("Error: Student ID must be a number.")
+
+        elif choice == '12':
+            try:
+                student_id = int(input("Enter student ID to remove: "))
+                remove_student(student_id)
+                made_change = True
+            except ValueError:
+                print("Error: Student ID must be a number.")
+
+        elif choice.lower() == 'q':
+            print("Saving final changes and exiting.")
+            break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+        if made_change:
+            save_data()
+
+    save_data()
+
+
+# --- Program Start ---
+if __name__ == "__main__":
+    main()

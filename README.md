@@ -1,49 +1,59 @@
 # FIT1056-PSTs-37403834
 
-## PST1 – Music School Management System (MSMS)
+## PST2 – Persistent Music School Management System (MSMS)
 
-This project implements an in-memory prototype of a Music School Management System (MSMS). The program provides a command-line front desk interface that allows users to register students and teachers, enrol existing students in instruments, search for students and teachers, and display student and teacher records.
+This project upgrades the Music School Management System (MSMS) developed in PST1. The program provides a command-line interface that allows users to register students and teachers, enrol existing students in instruments, search for students and teachers, display records, update and remove records, check students into courses, and print student ID cards. 
 
-The system stores student and teacher information in memory while the program is running. The data is represented using Student and Teacher objects and is stored in lists.
+Unlike PST1, where student and teacher information was only stored in memory while the program was running, PST2 uses a JSON file to provide persistent storage. This means that student, teacher, and attendance data can be saved and loaded again when the program is restarted.
+
+The system now stores its main data inside the global `app_data` dictionary. Student and teacher records are represented as dictionaries and stored in lists inside `app_data`.The system stores student and teacher information in memory while the program is running. The data is represented using Student and Teacher objects and is stored in lists.
 
 
 
 ## Features
 
-The current PST1 prototype supports the following functionality:
+The current PST2 system supports the following functionality:
 
 - Register a new student and automatically assign them a unique student ID.
 - Enrol a newly registered student in an instrument.
 - Enrol an existing student in additional instruments using their student ID.
 - Prevent duplicate instrument enrolments for the same student using case-insensitive comparison.
-- Register new teachers through the admin menu and automatically assign them a unique teacher ID.
+- Register new teachers and automatically assign them a unique teacher ID.
 - Search for students by name.
 - Search for teachers by name or speciality.
 - Perform case-insensitive and partial-text searches.
 - Display all registered students and their instrument enrolments.
 - Display all teachers and their specialities.
-- Validate required inputs such as student names, teacher names, instruments, specialities, and search terms so that blank values are not accepted.
-- Handle non-numeric and non-existent student IDs when enrolling existing students.
-- Provide clear student and teacher lookup results when no matching record is found.
+- Update existing student information.
+- Update existing teacher information.
+- Remove students from the system.
+- Remove teachers from the system.
+- Check a student into a course and record the check-in in the attendance data.
+- Automatically record the date and time of a student check-in.
+- Print a student ID card to a text file.
+- Save student, teacher, attendance, and ID data to `msms.json`.
+- Load previously saved data when the program starts.
+- Save changes after operations that modify the system data.
+- Validate required inputs such as student names, teacher names, instruments, specialities, course IDs, and search terms.
+- Handle non-numeric and non-existent IDs where required.
 - Provide a menu-driven command-line interface that continues running until the user chooses to quit.
-
 
 
 ## Project Components
 
-The PST1 implementation is divided into four main parts:
+The PST2 implementation is divided into four main parts:
 
-### Fragment 1.1 – Data Models and In-Memory Storage
-Defines the `Student` and `Teacher` classes used to represent the main entities in the system. It also creates the in-memory student and teacher data stores and maintains counters for assigning unique IDs.
+### Fragment 2.1 – Core Persistence Engine
+Introduces persistent storage using the `app_data` dictionary and the `msms.json` file. The `load_data()` function loads previously saved application data when the program starts. If the file does not exist, the program creates the default data structure. The `save_data()` function writes the current application data to the JSON file.
 
-### Fragment 1.2 – Core Helper Functions
-Implements the core operations used to manage and search the system's data, including adding teachers, listing students and teachers, and searching for records.
+### Fragment 2.2 – Refactoring and Expanding CRUD Operations
+Refactors the data-management functions so that they work with dictionaries stored inside `app_data` instead of the in-memory objects used in PST1. It includes teacher creation and adds operations for updating and removing students and teachers.
 
-### Fragment 1.3 – Front Desk Functions
-Implements higher-level front desk operations for registering students, enrolling existing students in instruments, and performing lookups for students or teachers. The integrated prototype also extends these operations with teacher registration.
+### Fragment 2.3 – Receptionist Features
+Adds two new receptionist features. The `check_in()` function records a student's course check-in and timestamp in the attendance list. The `print_student_card()` function creates a text file containing the student's ID, name, and instrument enrolments.
 
-### Fragment 1.4 – Main Menu
-Provides the command-line menu used to interact with the complete system. It connects the previous components and repeatedly accepts user choices until the user chooses to quit.
+### Fragment 2.4 – Main Application
+Integrates the PST1 functionality and the new PST2 functionality into the final command-line menu. The application loads saved data when it starts, allows the user to perform the available operations, saves data after changes, and performs a final save when the user quits.
 
 
 
@@ -59,11 +69,12 @@ Provides the command-line menu used to interact with the complete system. It con
 3. Run the following command:
 
 ```bash
-python MSMS.py
+python pst2_main.py
 ```
 
-4. The Music School Front Desk menu will appear in the terminal.
+4. The Music School Management System PST2 menu will appear in the terminal.
 5. Enter one of the displayed menu options and press Enter to perform the corresponding operation.
+6. Enter `q` to save the current data and exit the program.
 
 
 
@@ -74,64 +85,78 @@ The program can be tested manually through the command-line menu.
 The following manual test sequence was used to verify the main functionality:
 
 1. Register a new student with a valid name and instrument and confirm that a unique student ID is assigned.
-2. Register multiple students, including students with the same name, and confirm that they receive different IDs.
-3. Enrol an existing student in an additional instrument using their student ID.
-4. Attempt to enrol the same student in the same instrument using different capitalisation and confirm that the duplicate enrolment is rejected.
-5. Display all students and confirm that their names, IDs, and instrument enrolments are shown correctly.
-6. Search for students using full and partial names and confirm that searches are case-insensitive.
-7. Search for teachers using names and specialities and confirm that searches are case-insensitive.
-8. Perform a search that matches only a student or only a teacher and confirm that the output clearly identifies which type of record has no matches.
-9. Attempt an empty search and confirm that it is rejected.
-10. Register a new teacher and confirm that a unique teacher ID is assigned.
-11. Display all teachers and confirm that newly registered teachers appear in the teacher list.
-12. Attempt registration with blank student names, teacher names, instruments, and teacher specialities and confirm that the invalid input is rejected.
-13. Attempt to enrol a student using a non-numeric ID and confirm that an appropriate error message is displayed.
-14. Attempt to enrol a student using a numeric ID that does not exist and confirm that the program rejects the ID before requesting an instrument.
-15. Enter an invalid menu option and confirm that the program displays an appropriate message and continues running.
-16. Select `q` to confirm that the program exits correctly.
+2. Register a new teacher and confirm that a unique teacher ID is assigned.
+3. Display all students and confirm that the new student appears with the correct ID and instrument.
+4. Display all teachers and confirm that the new teacher appears with the correct ID and speciality.
+5. Enrol an existing student in an additional instrument using their student ID.
+6. Attempt to enrol the same student in the same instrument using different capitalisation and confirm that the duplicate enrolment is rejected.
+7. Search for students and teachers using full or partial search terms and confirm that the searches are case-insensitive.
+8. Attempt an empty search and confirm that it is rejected.
+9. Check a valid student into a course and confirm that an attendance record is created.
+10. Print a student card and confirm that a text file containing the student's details is created.
+11. Update a teacher's information and confirm that the updated information is displayed.
+12. Update a student's information and confirm that the updated information is displayed.
+13. Attempt to use a non-numeric student or teacher ID where a numeric ID is required and confirm that an appropriate error message is displayed.
+14. Attempt to use a student ID that does not exist and confirm that an appropriate error message is displayed.
+15. Remove a student and confirm that the student is no longer displayed.
+16. Remove a teacher and confirm that the teacher is no longer displayed.
+17. Enter an invalid menu option and confirm that the program displays an appropriate message and continues running.
+18. Select `q` and confirm that the application saves the data and exits correctly.
+19. Run `pst2_main.py` again and confirm that previously saved student, teacher, enrolment, and attendance data is loaded from `msms.json`.
 
 ### Note:
-Because this version uses in-memory storage, test data is reset each time the program is restarted.
+Unlike PST1, the data is not reset when the program is restarted. The application saves its data to `msms.json` and loads it again the next time the program is run.
 
 
 
 ## Design Choices and Assumptions
 
-- `Student` and `Teacher` classes are used to represent the two main types of records managed by the system.
-- Student and teacher records are stored in Python lists (`student_db` and `teacher_db`) to provide simple in-memory storage for the PST1 prototype.
-- Numeric ID counters are used to assign a unique ID to each new student and teacher during a program session.
-- A student's `enrolled_in` attribute is stored as a list so that a student can be enrolled in more than one instrument.
+- A global `app_data` dictionary is used as the main data store for the application.
+- Student and teacher records are represented as dictionaries and stored in lists inside `app_data`.
+- Attendance records are stored in the `attendance` list inside `app_data`.
+- The `next_student_id` and `next_teacher_id` values are stored in `app_data` so that unique IDs can continue correctly after the program is restarted.
+- JSON is used to save the application data because it allows the program's dictionary and list data to be stored in a readable file.
+- A student's `enrolled_in` value is stored as a list so that a student can be enrolled in more than one instrument.
 - Searches are case-insensitive so that differences in capitalisation do not prevent a matching record from being found.
 - Student lookup searches by name, while teacher lookup searches by both name and speciality.
-- The system uses a command-line menu because PST1 focuses on implementing and demonstrating the core program logic.
+- Duplicate instrument enrolments are checked using a case-insensitive comparison.
+- Student check-ins contain the student ID, course ID, and timestamp.
+- Student cards are created as text files containing the student's ID, name, and current instrument enrolments.
+- The system continues to use a command-line menu so that the PST1 functionality and new PST2 functionality can be accessed from one application.
 
 ### Assumptions
 
-- User-entered names, instruments, and teacher specialities are assumed to contain sensible values after basic validation. Blank or whitespace-only values are rejected, but the prototype does not perform advanced validation such as checking whether names contain numbers or special characters.
-- Each teacher is assumed to have one speciality in the current PST1 prototype.
-- The system assumes that records only need to exist for the duration of the current program session because PST1 uses in-memory storage.
-- The system is intended to be operated through the provided menu, with users selecting one of the available menu options.
+- User-entered names, instruments, specialities, and course IDs are assumed to contain sensible values after basic validation.
+- Blank or whitespace-only required values are rejected where validation is provided.
+- Each teacher is assumed to have one speciality.
+- A student may be enrolled in multiple instruments.
+- The program is intended to be operated through the provided menu.
+- The `msms.json` file is used by the program to maintain data between sessions.
 
 
 
 ## Limitations
 
-- The system uses in-memory storage, so student and teacher data created during a session is lost when the program terminates.
-- The prototype does not use a file or database for persistent storage.
-- Input validation remains limited to basic checks. Blank or whitespace-only required values are rejected, but advanced validation of names, instruments, and specialities is not implemented.
+- Input validation remains limited to basic checks. The program does not perform advanced validation of names, instruments, specialities, or course IDs.
 - Each teacher currently stores only one speciality.
+- Student cards are generated as text files rather than formatted graphical cards.
 - The system provides a command-line interface only and does not include a graphical user interface (GUI).
+- The application uses a JSON file for persistence rather than a database.
 
 
 ## Additional Improvements
 
-After completing the initial PST1 functionality, several additional improvements were implemented and tested to improve usability and robustness:
+The improvements previously added in PST1 were kept where they were still suitable and were adjusted to work with the new PST2 data structure.
 
-- Added basic validation to prevent blank or whitespace-only student names, teacher names, instruments, specialities, and search terms.
-- Added early validation in the menu so invalid information is rejected before unnecessary follow-up information is requested.
-- Added protection against duplicate instrument enrolments using case-insensitive comparison.
-- Improved lookup output so student and teacher search results clearly indicate which type of record has or has not been matched.
-- Improved registration confirmation messages to display useful information such as the newly assigned student or teacher ID.
-- Added teacher registration through the admin menu using the existing teacher data model and ID system.
-- Improved student ID handling so non-numeric and non-existent IDs are rejected before requesting an instrument.
-- Added whitespace handling using `strip()` so accidental spaces around user input do not affect normal operation.
+These include:
+
+- Basic validation to prevent blank or whitespace-only student names, teacher names, instruments, specialities, course IDs, and search terms where required.
+- Protection against duplicate instrument enrolments using case-insensitive comparison.
+- Case-insensitive and partial-text searching for student and teacher records.
+- Clear lookup output when no matching student or teacher is found.
+- Registration confirmation messages that display the assigned student or teacher ID.
+- Teacher registration through the main menu.
+- Handling of non-numeric IDs through error messages instead of allowing the program to crash.
+- Validation of student IDs before recording a student check-in.
+- Whitespace handling using `strip()` so accidental spaces around user input do not affect normal operation.
+- Integration of the existing PST1 student registration, enrolment, lookup, listing, and teacher registration functionality with the new persistent PST2 data model.

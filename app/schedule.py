@@ -9,8 +9,8 @@ class ScheduleManager:
         self.students = []
         self.teachers = []
         self.courses = []
-        # TODO: Initialize the new attendance_log attribute as an empty list.
         self.attendance_log = []
+
         # ... (next_id counters) ...
         self._load_data()
 
@@ -19,27 +19,60 @@ class ScheduleManager:
         try:
             with open(self.data_path, 'r') as f:
                 data = json.load(f)
-                # TODO: Load students, teachers, and courses as before.
-                # ...
 
-                # TODO: Correctly load the attendance log.
-                # Use .get() with a default empty list to prevent errors if the key doesn't exist.
+                # Convert each saved student dictionary into a StudentUser object.
+                for student_data in data["students"]:
+                    student = StudentUser(
+                        student_data["id"],
+                        student_data["name"]
+                    )
+
+                    student.enrolled_course_ids = student_data["enrolled_course_ids"]
+                    self.students.append(student)
+
+                # Convert each saved teacher dictionary into a TeacherUser object.
+                for teacher_data in data["teachers"]:
+                    teacher = TeacherUser(
+                        teacher_data["id"],
+                        teacher_data["name"],
+                        teacher_data["speciality"]
+                    )
+
+                    self.teachers.append(teacher)
+
+
+                # Convert each saved course dictionary into a Course object.
+                for course_data in data["courses"]:
+                    course = Course(
+                        course_data["id"],
+                        course_data["name"],
+                        course_data["instrument"],
+                        course_data["teacher_id"]
+                    )
+
+                    course.enrolled_student_ids = course_data["enrolled_student_ids"]
+                    course.lessons = course_data["lessons"]
+
+                    self.courses.append(course)
+
+
+                # Load attendance records. If none exist, use an empty list.
                 self.attendance_log = data.get("attendance", [])
+
         except FileNotFoundError:
             print("Data file not found. Starting with a clean state.")
     
     def _save_data(self):
         """Converts object lists back to dictionaries and saves to JSON."""
-        # TODO: Create a 'data_to_save' dictionary.
+
         data_to_save = {
             "students": [s.__dict__ for s in self.students],
             "teachers": [t.__dict__ for t in self.teachers],
             "courses": [c.__dict__ for c in self.courses],
-            # TODO: Add the attendance_log to the dictionary to be saved.
-            # Since it's already a list of dicts, no conversion is needed.
             "attendance": self.attendance_log,
+
             # ... (next_id counters) ...
         }
-        # TODO: Write 'data_to_save' to the JSON file.
+
         with open(self.data_path, 'w') as f:
             json.dump(data_to_save, f, indent=4)

@@ -115,3 +115,51 @@ class ScheduleManager:
                 return course
 
         return None
+
+
+    def get_lessons_for_day(self, day):
+        """Returns all course lessons scheduled for the given day."""
+        lessons_for_day = []
+
+        for course in self.courses:
+            for lesson in course.lessons:
+                if lesson["day"].lower() == day.lower():
+                    lessons_for_day.append({
+                        "course_name": course.name,
+                        "instrument": course.instrument,
+                        "start_time": lesson["start_time"],
+                        "room": lesson["room"]
+                    })
+
+        return lessons_for_day
+
+
+    def switch_student_course(self, student_id, from_course_id, to_course_id):
+        """Moves a student from one course to another."""
+        student = self.find_student_by_id(student_id)
+        from_course = self.find_course_by_id(from_course_id)
+        to_course = self.find_course_by_id(to_course_id)
+
+        if not student or not from_course or not to_course:
+            print("Error: Invalid student or course ID.")
+            return False
+
+        if from_course_id not in student.enrolled_course_ids:
+            print("Error: Student is not enrolled in the original course.")
+            return False
+
+        student.enrolled_course_ids.remove(from_course_id)
+
+        if student_id in from_course.enrolled_student_ids:
+            from_course.enrolled_student_ids.remove(student_id)
+
+        student.enrolled_course_ids.append(to_course_id)
+        to_course.enrolled_student_ids.append(student_id)
+
+        self._save_data()
+
+        print(
+            f"Success: {student.name} switched from "
+            f"{from_course.name} to {to_course.name}."
+        )
+        return True

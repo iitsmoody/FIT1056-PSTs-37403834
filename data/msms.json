@@ -5,7 +5,7 @@
             "name": "Alice Johnson",
             "enrolled_course_ids": [
                 101,
-                103
+                102
             ]
         },
         {
@@ -58,7 +58,8 @@
             "instrument": "Guitar",
             "teacher_id": 2,
             "enrolled_student_ids": [
-                2
+                2,
+                1
             ],
             "lessons": [
                 {
@@ -74,9 +75,7 @@
             "name": "Intermediate Piano",
             "instrument": "Piano",
             "teacher_id": 1,
-            "enrolled_student_ids": [
-                1
-            ],
+            "enrolled_student_ids": [],
             "lessons": []
         }
     ],

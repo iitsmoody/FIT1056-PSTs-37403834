@@ -163,3 +163,244 @@ class ScheduleManager:
             f"{from_course.name} to {to_course.name}."
         )
         return True
+
+
+    def register_student(self, name):
+        """Registers a new student and saves the updated data."""
+        name = name.strip()
+
+        if not name:
+            print("Error: Student name cannot be empty.")
+            return False
+
+        # Find the next available student ID.
+        new_id = 1
+        for student in self.students:
+            if student.id >= new_id:
+                new_id = student.id + 1
+
+        new_student = StudentUser(new_id, name)
+        self.students.append(new_student)
+
+        self._save_data()
+
+        print(
+            f"Student registration successful!\n"
+            f"Student: {new_student.name}\n"
+            f"Student ID: {new_student.id}"
+        )
+        return True
+
+
+    def register_teacher(self, name, speciality):
+        """Registers a new teacher and saves the updated data."""
+        name = name.strip()
+        speciality = speciality.strip()
+
+        if not name:
+            print("Error: Teacher name cannot be empty.")
+            return False
+
+        if not speciality:
+            print("Error: Teacher speciality cannot be empty.")
+            return False
+
+        # Find the next available teacher ID.
+        new_id = 1
+        for teacher in self.teachers:
+            if teacher.id >= new_id:
+                new_id = teacher.id + 1
+
+        new_teacher = TeacherUser(new_id, name, speciality)
+        self.teachers.append(new_teacher)
+
+        self._save_data()
+
+        print(
+            f"Teacher registration successful!\n"
+            f"Teacher: {new_teacher.name}\n"
+            f"Teacher ID: {new_teacher.id}\n"
+            f"Speciality: {new_teacher.speciality}"
+        )
+        return True
+
+
+    def enrol_student(self, student_id, course_id):
+        """Enrols an existing student into an existing course."""
+        student = self.find_student_by_id(student_id)
+        course = self.find_course_by_id(course_id)
+
+        if not student:
+            print(f"Error: Student ID {student_id} not found.")
+            return False
+
+        if not course:
+            print(f"Error: Course ID {course_id} not found.")
+            return False
+
+        if course_id in student.enrolled_course_ids:
+            print(
+                f"Error: {student.name} is already enrolled in "
+                f"{course.name}."
+            )
+            return False
+
+        student.enrolled_course_ids.append(course_id)
+
+        if student_id not in course.enrolled_student_ids:
+            course.enrolled_student_ids.append(student_id)
+
+        self._save_data()
+
+        print(
+            f"Success: {student.name} enrolled in "
+            f"{course.name}."
+        )
+        return True
+
+
+    def find_students(self, term):
+        """Returns students whose names match the search term."""
+        results = []
+
+        for student in self.students:
+            if term.lower() in student.name.lower():
+                results.append(student)
+
+        return results
+
+
+    def find_teachers(self, term):
+        """Returns teachers matching a name or speciality search."""
+        results = []
+
+        for teacher in self.teachers:
+            if (
+                term.lower() in teacher.name.lower()
+                or term.lower() in teacher.speciality.lower()
+            ):
+                results.append(teacher)
+
+        return results
+
+
+    def update_student(self, student_id, new_name):
+        """Updates the name of an existing student."""
+        student = self.find_student_by_id(student_id)
+
+        if not student:
+            print(f"Error: Student ID {student_id} not found.")
+            return False
+
+        new_name = new_name.strip()
+
+        if not new_name:
+            print("Error: Student name cannot be empty.")
+            return False
+
+        student.name = new_name
+        self._save_data()
+
+        print(f"Student {student_id} updated successfully.")
+        return True
+
+
+    def update_teacher(self, teacher_id, new_name, new_speciality):
+        """Updates an existing teacher's details."""
+        teacher = None
+
+        for current_teacher in self.teachers:
+            if current_teacher.id == teacher_id:
+                teacher = current_teacher
+                break
+
+        if not teacher:
+            print(f"Error: Teacher ID {teacher_id} not found.")
+            return False
+
+        new_name = new_name.strip()
+        new_speciality = new_speciality.strip()
+
+        if new_name:
+            teacher.name = new_name
+
+        if new_speciality:
+            teacher.speciality = new_speciality
+
+        self._save_data()
+
+        print(f"Teacher {teacher_id} updated successfully.")
+        return True
+
+
+    def remove_student(self, student_id):
+        """Removes a student and their course enrolments."""
+        student = self.find_student_by_id(student_id)
+
+        if not student:
+            print(f"Error: Student ID {student_id} not found.")
+            return False
+
+        # Remove the student from any courses they were enrolled in.
+        for course in self.courses:
+            if student_id in course.enrolled_student_ids:
+                course.enrolled_student_ids.remove(student_id)
+
+        self.students.remove(student)
+        self._save_data()
+
+        print(f"Student {student_id} removed successfully.")
+        return True
+
+
+    def remove_teacher(self, teacher_id):
+        """Removes an existing teacher from the system."""
+        teacher = None
+
+        for current_teacher in self.teachers:
+            if current_teacher.id == teacher_id:
+                teacher = current_teacher
+                break
+
+        if not teacher:
+            print(f"Error: Teacher ID {teacher_id} not found.")
+            return False
+
+        self.teachers.remove(teacher)
+        self._save_data()
+
+        print(f"Teacher {teacher_id} removed successfully.")
+        return True
+
+
+    def print_student_card(self, student_id):
+        """Creates a text-file ID card for a student."""
+        student = self.find_student_by_id(student_id)
+
+        if not student:
+            print(
+                f"Error: Could not print card, "
+                f"student {student_id} not found."
+            )
+            return False
+
+        course_names = []
+
+        for course_id in student.enrolled_course_ids:
+            course = self.find_course_by_id(course_id)
+
+            if course:
+                course_names.append(course.name)
+
+        filename = f"{student_id}_card.txt"
+
+        with open(filename, 'w') as f:
+            f.write("========================\n")
+            f.write("  MUSIC SCHOOL ID BADGE\n")
+            f.write("========================\n")
+            f.write(f"ID: {student.id}\n")
+            f.write(f"Name: {student.name}\n")
+            f.write(f"Courses: {', '.join(course_names)}\n")
+
+        print(f"Printed student card to {filename}.")
+        return True

@@ -191,6 +191,42 @@ class ScheduleManager:
         )
         return True
 
+    def register_new_student(self, name, instrument):
+        """Registers a new student and enrols them in a course for their first instrument."""
+        name = name.strip()
+        instrument = instrument.strip()
+
+        if not name or not instrument:
+            return False
+
+        # Find the first course that matches the requested instrument.
+        matching_course = None
+
+        for course in self.courses:
+            if course.instrument.lower() == instrument.lower():
+                matching_course = course
+                break
+
+        if not matching_course:
+            return False
+
+        # Find the next available student ID.
+        new_id = 1
+        for student in self.students:
+            if student.id >= new_id:
+                new_id = student.id + 1
+
+        # Create the student.
+        new_student = StudentUser(new_id, name)
+
+        # Enrol the student in the matching course.
+        new_student.enrolled_course_ids.append(matching_course.id)
+        matching_course.enrolled_student_ids.append(new_id)
+
+        self.students.append(new_student)
+        self._save_data()
+
+        return new_student
 
     def register_teacher(self, name, speciality):
         """Registers a new teacher and saves the updated data."""

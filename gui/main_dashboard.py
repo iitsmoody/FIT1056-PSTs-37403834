@@ -2,6 +2,7 @@
 import streamlit as st
 from app.schedule import ScheduleManager
 from gui.student_pages import show_student_management_page
+from gui.teacher_pages import show_teacher_management_page
 from gui.roster_pages import show_roster_page
 
 def launch():
@@ -15,11 +16,14 @@ def launch():
 
     st.sidebar.title("MSMS Navigation")
     # Create a radio button menu in the sidebar for page navigation.
-    page = st.sidebar.radio("Go to", ["Student Management", "Daily Roster", "Payments (stub)"])
+    # Teacher Management was added so the teacher features from PST3 can also be accessed through the GUI.
+    page = st.sidebar.radio("Go to", ["Student Management", "Teacher Management", "Daily Roster", "Payments (stub)"])
 
     # Use an if/elif block to call the correct function to render the selected page.
     if page == "Student Management":
         show_student_management_page(st.session_state.manager)
+    elif page == "Teacher Management":
+        show_teacher_management_page(st.session_state.manager)
     elif page == "Daily Roster":
         show_roster_page(st.session_state.manager)
     elif page == "Payments (stub)":

@@ -30,10 +30,13 @@ def show_roster_page(manager):
     st.subheader("Student Check-in")
 
     # To make this user-friendly, we should populate the dropdowns dynamically.
-    # Get lists of student names and course names from the manager.
+    # Get lists of students and courses from the manager.
 
-    # Map student names to their IDs.
-    student_list = {s.name: s.id for s in manager.students}
+    # Map the displayed student details to their IDs.
+    student_list = {
+        f"{student.id} - {student.name}": student.id
+        for student in manager.students
+    }
 
     # Stop gracefully if there are no registered students.
     if not student_list:
@@ -63,7 +66,7 @@ def show_roster_page(manager):
     # Stop gracefully if the selected student has no enrolled courses.
     if not course_list:
         st.warning(
-            f"{selected_student_name} is not currently enrolled in any courses."
+            f"{selected_student.name} is not currently enrolled in any courses."
         )
         return
 
@@ -76,15 +79,15 @@ def show_roster_page(manager):
         submitted = st.form_submit_button("Check-in Student")
 
         if submitted:
-            # Convert the selected names back to IDs.
+            # Convert the selected course name back to its ID.
             course_id = course_list[selected_course_name]
 
-            # This call now works because we implemented the method in PST3.
+            # Record the attendance using the ScheduleManager.
             success = manager.check_in(student_id, course_id)
 
             if success:
                 st.success(
-                    f"Checked in {selected_student_name} "
+                    f"Checked in {selected_student.name} "
                     f"for {selected_course_name}!"
                 )
             else:

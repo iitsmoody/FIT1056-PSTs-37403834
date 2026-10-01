@@ -88,6 +88,14 @@ class ScheduleManager:
         if not student or not course:
             print("Error: Check-in failed. Invalid Student or Course ID.")
             return False
+
+        # A student can only check in to a course they are enrolled in.
+        if course_id not in student.enrolled_course_ids:
+            print(
+                f"Error: Check-in failed. {student.name} is not enrolled "
+                f"in {course.name}."
+            )
+            return False
         
         timestamp = datetime.datetime.now().isoformat()
         check_in_record = {"student_id": student_id, "course_id": course_id, "timestamp": timestamp}
@@ -191,7 +199,7 @@ class ScheduleManager:
         )
         return True
 
-    def register_new_student(self, name, instrument):
+    def register_new_student(self, name, instrument, course_id=None):
         """Registers a new student and enrols them in a course for their first instrument."""
         name = name.strip()
         instrument = instrument.strip()
@@ -199,13 +207,20 @@ class ScheduleManager:
         if not name or not instrument:
             return False
 
-        # Find the first course that matches the requested instrument.
+        # Find the course for the student's selected instrument.
         matching_course = None
 
         for course in self.courses:
-            if course.instrument.lower() == instrument.lower():
-                matching_course = course
-                break
+            if course_id is not None:
+                # If the GUI supplied a course ID, use that exact course.
+                if course.id == course_id and course.instrument.lower() == instrument.lower():
+                    matching_course = course
+                    break
+            else:
+                # If no course ID was supplied, use the first course matching the instrument for backwards compatibility.
+                if course.instrument.lower() == instrument.lower():
+                    matching_course = course
+                    break
 
         if not matching_course:
             return False

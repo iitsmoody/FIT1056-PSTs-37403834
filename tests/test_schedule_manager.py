@@ -248,4 +248,73 @@ def test_cannot_remove_course_with_students(fresh_manager):
     assert course_id in fresh_manager.students[0].enrolled_course_ids
 
 
+def test_cancel_lesson(fresh_manager):
+    manager = fresh_manager
 
+    manager.register_teacher("Test Teacher", "Piano")
+    teacher_id = manager.teachers[0].id
+
+    assert manager.create_course("Test Piano", "Piano", teacher_id)
+
+    course = manager.courses[0]
+    course.lessons.append({
+        "day": "Monday",
+        "start_time": "10:00",
+        "room": "Room 1"
+    })
+
+    assert manager.cancel_lesson(course.id, 0, "Teacher unavailable")
+    assert len(course.lessons) == 0
+
+
+def test_add_lesson(fresh_manager):
+    manager = fresh_manager
+
+    manager.register_teacher("Test Teacher", "Piano")
+    teacher_id = manager.teachers[0].id
+
+    assert manager.create_course("Test Piano", "Piano", teacher_id)
+
+    course = manager.courses[0]
+
+    assert manager.add_lesson(
+        course.id,
+        "Monday",
+        "10:00",
+        "Room 1"
+    )
+
+    assert len(course.lessons) == 1
+    assert course.lessons[0]["day"] == "Monday"
+    assert course.lessons[0]["start_time"] == "10:00"
+    assert course.lessons[0]["room"] == "Room 1"
+
+
+def test_update_lesson(fresh_manager):
+    manager = fresh_manager
+
+    manager.register_teacher("Test Teacher", "Piano")
+    teacher_id = manager.teachers[0].id
+
+    assert manager.create_course("Test Piano", "Piano", teacher_id)
+
+    course = manager.courses[0]
+
+    manager.add_lesson(
+        course.id,
+        "Monday",
+        "10:00",
+        "Room 1"
+    )
+
+    assert manager.update_lesson(
+        course.id,
+        0,
+        "Wednesday",
+        "14:00",
+        "Room 3"
+    )
+
+    assert course.lessons[0]["day"] == "Wednesday"
+    assert course.lessons[0]["start_time"] == "14:00"
+    assert course.lessons[0]["room"] == "Room 3"

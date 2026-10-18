@@ -598,3 +598,90 @@ class ScheduleManager:
         self.courses.remove(course)
         self._save_data()
         return True
+
+
+    def cancel_lesson(self, course_id, lesson_index, reason):
+        """Cancels a scheduled lesson and records the cancellation."""
+
+        course = self.find_course_by_id(course_id)
+
+        if course is None:
+            return False
+
+        if lesson_index < 0 or lesson_index >= len(course.lessons):
+            return False
+
+        if not reason.strip():
+            return False
+
+        # Remove the selected lesson from the course.
+        course.lessons.pop(lesson_index)
+
+        # Save the updated course data.
+        self._save_data()
+
+        # Record the cancellation in the activity log.
+        logging.warning(
+            f"Lesson cancelled for course {course_id}. "
+            f"Reason: {reason.strip()}"
+        )
+
+        return True
+
+
+    def add_lesson(self, course_id, day, start_time, room):
+        """Adds a new lesson to an existing course."""
+
+        course = self.find_course_by_id(course_id)
+
+        if course is None:
+            return False
+
+        if not day.strip() or not start_time.strip() or not room.strip():
+            return False
+
+        new_lesson = {
+            "day": day.strip(),
+            "start_time": start_time.strip(),
+            "room": room.strip()
+        }
+
+        course.lessons.append(new_lesson)
+
+        self._save_data()
+
+        logging.info(
+            f"Lesson added to course {course_id}: "
+            f"{day} at {start_time} in {room}."
+        )
+
+        return True
+
+    def update_lesson(self, course_id, lesson_index, day, start_time, room):
+        """Updates an existing scheduled lesson."""
+
+        course = self.find_course_by_id(course_id)
+
+        if course is None:
+            return False
+
+        if lesson_index < 0 or lesson_index >= len(course.lessons):
+            return False
+
+        if not day.strip() or not start_time.strip() or not room.strip():
+            return False
+
+        lesson = course.lessons[lesson_index]
+
+        lesson["day"] = day.strip()
+        lesson["start_time"] = start_time.strip()
+        lesson["room"] = room.strip()
+
+        self._save_data()
+
+        logging.info(
+            f"Lesson updated for course {course_id}: "
+            f"{day} at {start_time} in {room}."
+        )
+
+        return True

@@ -1,5 +1,6 @@
 import json
 import datetime
+import csv
 from app.student import StudentUser
 from app.teacher import TeacherUser, Course
 
@@ -11,6 +12,7 @@ class ScheduleManager:
         self.teachers = []
         self.courses = []
         self.attendance_log = []
+        self.finance_log = []
 
         # ... (next_id counters) ...
         self._load_data()
@@ -60,6 +62,9 @@ class ScheduleManager:
                 # Load attendance records. If none exist, use an empty list.
                 self.attendance_log = data.get("attendance", [])
 
+                # Load payment records. If none exist, use an empty list.
+                self.finance_log = data.get("finance", [])
+
         except FileNotFoundError:
             print("Data file not found. Starting with a clean state.")
     
@@ -71,6 +76,7 @@ class ScheduleManager:
             "teachers": [t.__dict__ for t in self.teachers],
             "courses": [c.__dict__ for c in self.courses],
             "attendance": self.attendance_log,
+            "finance": self.finance_log,
 
             # ... (next_id counters) ...
         }
@@ -455,3 +461,58 @@ class ScheduleManager:
 
         print(f"Printed student card to {filename}.")
         return True
+
+    def record_payment(self, student_id, amount, method):
+        """Adds a payment record to the finance log."""
+
+        # Find the student to ensure they exist.
+        student = self.find_student_by_id(student_id)
+
+        if not student:
+            print(f"Error: Student ID {student_id} not found.")
+            return False
+
+        # Create a payment dictionary with the student's payment details.
+        payment_record = {
+            "student_id": student_id,
+            "amount": amount,
+            "method": method,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+
+        # Append the record to the finance log and save the data.
+        self.finance_log.append(payment_record)
+        self._save_data()
+
+        print(f"Payment of {amount} for student {student_id} recorded.")
+        return True
+
+    def get_payment_history(self, student_id):
+        """Returns a list of all payments for a given student."""
+
+        # Return only the payment records belonging to the given student.
+        return [p for p in self.finance_log if p["student_id"] == student_id]
+
+    def export_report(self, kind, out_path):
+        """Exports a finance or attendance log to a CSV file."""
+
+        print(f"Exporting {kind} report to {out_path}...")
+
+        # Select the correct records and column headers.
+        if kind == "finance":
+            data_to_export = self.finance_log
+            headers = ["student_id", "amount", "method", "timestamp"]
+
+        elif kind == "attendance":
+            data_to_export = self.attendance_log
+            headers = ["student_id", "course_id", "timestamp"]
+
+        else:
+            print("Error: Unknown report type.")
+            return
+
+        # Write the selected records to a CSV file.
+        with open(out_path, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(data_to_export)

@@ -5,6 +5,7 @@ from gui.student_pages import show_student_management_page
 from gui.teacher_pages import show_teacher_management_page
 from gui.roster_pages import show_roster_page
 from gui.finance_pages import show_finance_page
+from app.admin_utils import backup_data
 
 def launch():
     """Sets up the main Streamlit application window and navigation."""
@@ -19,6 +20,15 @@ def launch():
     # Create a radio button menu in the sidebar for page navigation.
     # Teacher Management was added so the teacher features from PST3 can also be accessed through the GUI.
     page = st.sidebar.radio("Go to", ["Student Management", "Teacher Management", "Daily Roster", "Payments"])
+
+    st.sidebar.divider()
+    st.sidebar.subheader("Administration")
+
+    if st.sidebar.button("Backup Data Now"):
+        if backup_data():
+            st.sidebar.success("Data backed up successfully!")
+        else:
+            st.sidebar.error("Backup failed.")
 
     # Use an if/elif block to call the correct function to render the selected page.
     if page == "Student Management":

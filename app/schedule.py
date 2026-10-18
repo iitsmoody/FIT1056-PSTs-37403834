@@ -1,6 +1,7 @@
 import json
 import datetime
 import csv
+import logging
 from app.student import StudentUser
 from app.teacher import TeacherUser, Course
 
@@ -247,6 +248,11 @@ class ScheduleManager:
         self.students.append(new_student)
         self._save_data()
 
+        logging.info(
+            f"New student registered: {new_student.name} "
+            f"(ID: {new_student.id}), enrolled in {matching_course.name}."
+        )
+
         return new_student
 
     def register_teacher(self, name, speciality):
@@ -483,6 +489,11 @@ class ScheduleManager:
         # Append the record to the finance log and save the data.
         self.finance_log.append(payment_record)
         self._save_data()
+
+        logging.info(
+            f"Payment recorded: ${amount:.2f} for student "
+            f"{student.name} (ID: {student_id}) via {method}."
+        )
 
         print(f"Payment of {amount} for student {student_id} recorded.")
         return True

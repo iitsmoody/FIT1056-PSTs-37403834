@@ -527,3 +527,74 @@ class ScheduleManager:
             writer = csv.DictWriter(f, fieldnames=headers)
             writer.writeheader()
             writer.writerows(data_to_export)
+
+
+    def create_course(self, name, instrument, teacher_id):
+        """Creates a course and assigns it to an existing teacher."""
+        name = name.strip()
+        instrument = instrument.strip()
+
+        if not name or not instrument:
+            return False
+
+        if not any(t.id == teacher_id for t in self.teachers):
+            return False
+
+        if any(c.name.lower() == name.lower() for c in self.courses):
+            return False
+
+        new_id = max((c.id for c in self.courses), default=0) + 1
+        course = Course(new_id, name, instrument, teacher_id)
+        self.courses.append(course)
+        self._save_data()
+        return True
+
+    def update_course(self, course_id, name, instrument, teacher_id):
+        """Updates a course while preserving enrolments and lessons."""
+        course = self.find_course_by_id(course_id)
+
+        if course is None:
+            return False
+
+        name = name.strip()
+        instrument = instrument.strip()
+
+        if not name or not instrument:
+            return False
+
+        if not any(t.id == teacher_id for t in self.teachers):
+            return False
+
+        if any(
+            c.id != course_id and c.name.lower() == name.lower()
+            for c in self.courses
+        ):
+            return False
+
+        course.name = name
+        course.instrument = instrument
+        course.teacher_id = teacher_id
+        self._save_data()
+        return True
+
+    def remove_course(self, course_id):
+        """Removes an empty course without leaving invalid enrolments."""
+        course = self.find_course_by_id(course_id)
+
+        if course is None:
+            return False
+
+        # Protect courses that still have students or scheduled lessons.
+        if course.enrolled_student_ids or course.lessons:
+            return False
+
+        # Also check the student records for existing enrolments.
+        if any(
+            course_id in student.enrolled_course_ids
+            for student in self.students
+        ):
+            return False
+
+        self.courses.remove(course)
+        self._save_data()
+        return True

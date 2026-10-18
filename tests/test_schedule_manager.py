@@ -159,4 +159,93 @@ def test_register_new_student(fresh_manager):
     assert student.id in course.enrolled_student_ids
 
 
+def test_create_course(fresh_manager):
+    # ARRANGE
+    fresh_manager.register_teacher("Test Teacher", "Piano")
+    teacher_id = fresh_manager.teachers[0].id
+
+    # ACT
+    result = fresh_manager.create_course(
+        "Beginner Piano", "Piano", teacher_id
+    )
+
+    # ASSERT
+    assert result is True
+    assert len(fresh_manager.courses) == 1
+    assert fresh_manager.courses[0].name == "Beginner Piano"
+    assert fresh_manager.courses[0].teacher_id == teacher_id
+
+
+def test_create_course_invalid_teacher(fresh_manager):
+    # ACT
+    result = fresh_manager.create_course(
+        "Beginner Piano", "Piano", 999
+    )
+
+    # ASSERT
+    assert result is False
+    assert len(fresh_manager.courses) == 0
+
+
+def test_update_course(fresh_manager):
+    # ARRANGE
+    fresh_manager.register_teacher("Test Teacher", "Piano")
+    teacher_id = fresh_manager.teachers[0].id
+
+    fresh_manager.create_course(
+        "Beginner Piano", "Piano", teacher_id
+    )
+    course_id = fresh_manager.courses[0].id
+
+    # ACT
+    result = fresh_manager.update_course(
+        course_id, "Intermediate Piano", "Piano", teacher_id
+    )
+
+    # ASSERT
+    assert result is True
+    assert fresh_manager.courses[0].name == "Intermediate Piano"
+
+
+def test_remove_empty_course(fresh_manager):
+    # ARRANGE
+    fresh_manager.register_teacher("Test Teacher", "Piano")
+    teacher_id = fresh_manager.teachers[0].id
+
+    fresh_manager.create_course(
+        "Beginner Piano", "Piano", teacher_id
+    )
+    course_id = fresh_manager.courses[0].id
+
+    # ACT
+    result = fresh_manager.remove_course(course_id)
+
+    # ASSERT
+    assert result is True
+    assert len(fresh_manager.courses) == 0
+
+
+def test_cannot_remove_course_with_students(fresh_manager):
+    # ARRANGE
+    fresh_manager.register_teacher("Test Teacher", "Piano")
+    teacher_id = fresh_manager.teachers[0].id
+
+    fresh_manager.create_course(
+        "Beginner Piano", "Piano", teacher_id
+    )
+    course_id = fresh_manager.courses[0].id
+
+    fresh_manager.register_new_student(
+        "Test Student", "Piano", course_id
+    )
+
+    # ACT
+    result = fresh_manager.remove_course(course_id)
+
+    # ASSERT
+    assert result is False
+    assert len(fresh_manager.courses) == 1
+    assert course_id in fresh_manager.students[0].enrolled_course_ids
+
+
 
